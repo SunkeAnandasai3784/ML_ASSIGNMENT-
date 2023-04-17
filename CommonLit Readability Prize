@@ -1,0 +1,31 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Load data
+train_data = pd.read_csv('train.csv')
+
+# Preprocess data
+train_data['excerpt'] = train_data['excerpt'].apply(lambda x: x.lower()) # convert to lowercase
+train_data['excerpt'] = train_data['excerpt'].apply(lambda x: ' '.join(x.split())) # remove extra whitespace
+
+# Split data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(train_data['excerpt'], train_data['target'], test_size=0.2, random_state=42)
+
+# Vectorize text data
+vectorizer = TfidfVectorizer()
+X_train_vec = vectorizer.fit_transform(X_train)
+X_val_vec = vectorizer.transform(X_val)
+
+# Train linear regression model
+model = LinearRegression()
+model.fit(X_train_vec, y_train)
+
+# Evaluate model
+y_pred = model.predict(X_val_vec)
+mse = mean_squared_error(y_val, y_pred)
+print("Mean squared error:", mse)
